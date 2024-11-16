@@ -45,5 +45,6 @@ fi
 
 echo -e "\nRunning Python script"
 python "ytos_script.py" "$youtube_link" "$song_dl_dir"
+echo -e "\nPython script has completed download"
 
 exit 0
