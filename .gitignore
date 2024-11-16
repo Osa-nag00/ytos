@@ -1,2 +1,5 @@
 # ignore env
 ytos_env/
+
+# ignore temp dir
+temp/
