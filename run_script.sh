@@ -12,7 +12,7 @@ usage() {
     echo " -h       Display this help message"
     echo -e "\nRequired:"
     echo " -l       Used to specify the youtube link to download"
-    echo " -d       Used to specify to dir of where to download the mp3"
+    echo " -d       Used to specify to absolute path of the directory where the mp3 will go"
 }
 
 # if there is ":" after letter, it means that opt is required
