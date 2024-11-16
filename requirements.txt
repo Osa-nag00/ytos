@@ -31,6 +31,7 @@ nvidia-nvtx-cu11==11.7.91
 opt-einsum==3.3.0
 optree==0.10.0
 python-xlib==0.33
+pytubefix==8.3.2
 requests==2.31.0
 rich==13.7.1
 sympy==1.12
