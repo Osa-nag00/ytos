@@ -38,5 +38,6 @@ sympy==1.12
 termcolor==2.4.0
 triton==2.0.0
 urllib3==2.2.1
+validators==0.34.0
 Werkzeug==3.0.1
 wrapt==1.16.0
