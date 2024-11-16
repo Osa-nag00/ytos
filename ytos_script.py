@@ -3,6 +3,13 @@ import validators
 import os
 import urllib.request
 import shutil
+import datetime
+from typing import Optional
+
+import eyed3
+from eyed3.core import AudioFile
+from eyed3.core import Tag
+from eyed3.id3.frames import ImageFrame
 
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
@@ -62,14 +69,17 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
 
     video: YouTube = YouTube(youtube_url, on_progress_callback=on_progress)
     artist: str = video.author
+    title: str = video.title
+    publish_date: datetime = video.publish_date
     thumbnail_url: str = video.thumbnail_url
     has_image: bool = False
+    thumbnail_path = "temp/thumbnail/image.jpg"
 
     # download the thumbnail is available
     # will later attach to mp3 for track image, if one is not already applied
     if is_valid_url(thumbnail_url):
         # this return a tuple but I don't really need the information from it
-        urllib.request.urlretrieve(thumbnail_url, "temp/thumbnail/image.jpg")
+        path, msg = urllib.request.urlretrieve(thumbnail_url, thumbnail_path)
         has_image = True
 
     # get all streams from the video
@@ -79,13 +89,38 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     mp3_from_video: Stream = streams.get_audio_only()
     downloaded_file_path = mp3_from_video.download(output_path="temp/mp3", mp3=True, max_retries=10)
 
+    # modify_mp3_metadata(downloaded_file_path, title, artist, publish_date, has_image, thumbnail_path)
+
     # after editing mp3, move it to the correct location
     shutil.move(downloaded_file_path, download_dir)
 
     # remove the temp dir
     clean_up()
 
-    pass
+
+# TODO: this function seem to just not work at all; WIll fix later
+def modify_mp3_metadata(
+    mp3_file_path: str,
+    title: str,
+    artist: str,
+    publish_date: datetime,
+    has_image: Optional[bool] = False,
+    thumbnail_path: Optional[str] = None,
+) -> None:
+
+    mp3: AudioFile = eyed3.load(mp3_file_path)
+
+    if mp3.tag == None:
+        mp3.initTag()
+
+    mp3.tag.artist = artist
+    mp3.tag.album_artist = artist
+    mp3.tag.title = title
+
+    if has_image:
+        mp3.tag.images.set(ImageFrame.FRONT_COVER, open(thumbnail_path, "rb").read(), "image/jpeg")
+
+    mp3.tag.save(mp3_file_path, version=eyed3.id3.ID3_V2_3)
 
 
 def main():
@@ -93,7 +128,7 @@ def main():
     youtube_url = sys.argv[1]
     download_dir = sys.argv[2]
     # TODO: take out later for debugging reasons
-    # youtube_url = "https://youtu.be/ts7evAgPWKE?si=wSZJ1fzxaTKVIcPB"
+    # youtube_url = "https://youtu.be/DXk8S3OlBrE?si=j2NnLy0guSUm8te7"
     # download_dir = "mp3s/"  # this will really be the folder passed in from script
 
     # do a quick validation check on the args passed in

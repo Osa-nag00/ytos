@@ -44,7 +44,7 @@ if [[ -z $youtube_link ]] || [[ -z $song_dl_dir ]]; then
 fi
 
 echo -e "\nRunning Python script"
-python "ytos_script.py" "$youtube_link" "$song_dl_dir"
-echo -e "\nPython script has completed download"
+python "ytos_script.py" "$youtube_link" "$song_dl_dir" #check the exit value on this for what should be printed out!!!
+echo -e "\nPython the mp3 has been downloaded"
 
 exit 0
