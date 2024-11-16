@@ -3,3 +3,7 @@ ytos_env/
 
 # ignore temp dir
 temp/
+mp3s/
+
+#ignore vscode workspace settings
+.vscode/
