@@ -21,6 +21,7 @@ while getopts "hl:d:" flag; do
     case $flag in
     h)
         usage
+        exit 0
         ;;
     l)
         youtube_link=$OPTARG
@@ -31,6 +32,7 @@ while getopts "hl:d:" flag; do
 
     \?)
         usage
+        exit 0
         ;;
     esac
 done
