@@ -42,9 +42,10 @@ if [[ -z $youtube_link ]] || [[ -z $song_dl_dir ]]; then
     usage
     exit 1
 fi
+# TODO: need to fix this guy printing good;  when really bad :( !
 
 echo -e "\nRunning Python script"
-python "ytos_script.py" "$youtube_link" "$song_dl_dir" #check the exit value on this for what should be printed out!!!
+python "ytos_script.py" "$youtube_link" "$song_dl_dir" # check the exit value on this for what should be printed out!!!
 echo -e "\nPython the mp3 has been downloaded"
 
 exit 0

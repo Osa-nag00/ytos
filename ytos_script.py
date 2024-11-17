@@ -6,10 +6,13 @@ import shutil
 import datetime
 from typing import Optional
 
+from pydub import AudioSegment
+
 import eyed3
-from eyed3.core import AudioFile
-from eyed3.core import Tag
 from eyed3.id3.frames import ImageFrame
+
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, TIT2, TALB, TPE1, TPE2, TCON, TPUB, TENC, TIT3, APIC, WOAR, TMOO
 
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
@@ -19,7 +22,7 @@ from pytubefix import Stream
 
 def is_download_dir_valid(dir: str) -> bool:
     """Checks if the download directory exist and is valid
-        !THIS WILL NOT CREATE A DIR FOR YOU
+        THIS WILL NOT CREATE A DIR FOR YOU!
     Args:
         dir (str): Directory where the mp3 will be downloaded to
 
@@ -56,7 +59,7 @@ def clean_up():
         shutil.rmtree("temp/")
 
 
-# TODO: come back and see if changing the metadata of the mp3 will be possible
+# TODO: clean this up, add the rest of the docs to the code
 def download_mp3_to_dir(youtube_url: str, download_dir: str):
     """Downloads the mp3 from the YouTube URL to the download dir while modifying any mp3 attributes if needed
 
@@ -79,17 +82,30 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     # will later attach to mp3 for track image, if one is not already applied
     if is_valid_url(thumbnail_url):
         # this return a tuple but I don't really need the information from it
-        path, msg = urllib.request.urlretrieve(thumbnail_url, thumbnail_path)
+        urllib.request.urlretrieve(thumbnail_url, thumbnail_path)
         has_image = True
 
     # get all streams from the video
     streams: StreamQuery = video.streams
 
     # extract only the mp3 from the video
-    mp3_from_video: Stream = streams.get_audio_only()
-    downloaded_file_path = mp3_from_video.download(output_path="temp/mp3", mp3=True, max_retries=10)
+    audio_from_video: Stream = streams.get_audio_only()
+    downloaded_file_path = audio_from_video.download(output_path="temp/mp3", mp3=True, max_retries=10)
 
-    # modify_mp3_metadata(downloaded_file_path, title, artist, publish_date, has_image, thumbnail_path)
+    """
+    For some reason when downloading the video and then extracting audio only from youtube, the audio file actually 
+    follows the m4a codec. This causes problems when trying the modify mp3 specific attributes that use the ID3 header.
+    To fix that, convert the mystery file into an actual mp3 using some ffmpeg magic and then you're able to modify the
+    mp3 attributes.
+    """
+    convert_audio_to_mp3(downloaded_file_path)
+
+    edit_mp3_metadata(
+        downloaded_file_path, title=title, album_artist=artist, author_url=youtube_url, contributing_artists=artist
+    )
+
+    if has_image:
+        add_album_art(downloaded_file_path, album_art_file=thumbnail_path)
 
     # after editing mp3, move it to the correct location
     shutil.move(downloaded_file_path, download_dir)
@@ -98,36 +114,111 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     clean_up()
 
 
-# TODO: this function seem to just not work at all; WIll fix later
-def modify_mp3_metadata(
-    mp3_file_path: str,
-    title: str,
-    artist: str,
-    publish_date: datetime,
-    has_image: Optional[bool] = False,
-    thumbnail_path: Optional[str] = None,
-) -> None:
+def convert_audio_to_mp3(filepath: str) -> None:
+    """_summary_
 
-    mp3: AudioFile = eyed3.load(mp3_file_path)
+    Args:
+        filepath (str): _description_
+    """
+    audio = AudioSegment.from_file(filepath, format="mp4")
+    audio.export(filepath, format="mp3")
+    pass
 
-    if mp3.tag == None:
-        mp3.initTag()
 
-    mp3.tag.artist = artist
-    mp3.tag.album_artist = artist
-    mp3.tag.title = title
+def edit_mp3_metadata(
+    mp3_file,
+    title=None,
+    subtitle=None,
+    contributing_artists=None,
+    album_artist=None,
+    album=None,
+    genre=None,
+    publisher=None,
+    encoded_by=None,
+    author_url=None,
+    mood=None,
+):
+    """_summary_
 
-    if has_image:
-        mp3.tag.images.set(ImageFrame.FRONT_COVER, open(thumbnail_path, "rb").read(), "image/jpeg")
+    Args:
+        mp3_file (_type_): _description_
+        title (_type_, optional): _description_. Defaults to None.
+        subtitle (_type_, optional): _description_. Defaults to None.
+        contributing_artists (_type_, optional): _description_. Defaults to None.
+        album_artist (_type_, optional): _description_. Defaults to None.
+        album (_type_, optional): _description_. Defaults to None.
+        genre (_type_, optional): _description_. Defaults to None.
+        publisher (_type_, optional): _description_. Defaults to None.
+        encoded_by (_type_, optional): _description_. Defaults to None.
+        author_url (_type_, optional): _description_. Defaults to None.
+        mood (_type_, optional): _description_. Defaults to None.
+    """
+    audio = MP3(mp3_file, ID3=ID3)
 
-    mp3.tag.save(mp3_file_path, version=eyed3.id3.ID3_V2_3)
+    if title:
+        audio["TIT2"] = TIT2(encoding=3, text=title)  # Title
+    if subtitle:
+        audio["TIT3"] = TIT3(encoding=3, text=subtitle)  # Subtitle
+    if contributing_artists:
+        audio["TPE1"] = TPE1(encoding=3, text=contributing_artists)  # Contributing artists
+    if album_artist:
+        audio["TPE2"] = TPE2(encoding=3, text=album_artist)  # Album artist
+    if album:
+        audio["TALB"] = TALB(encoding=3, text=album)  # Album
+    if genre:
+        audio["TCON"] = TCON(encoding=3, text=genre)  # Genre
+    if publisher:
+        audio["TPUB"] = TPUB(encoding=3, text=publisher)  # Publisher
+    if encoded_by:
+        audio["TENC"] = TENC(encoding=3, text=encoded_by)  # Encoded by
+    if author_url:
+        audio["WOAR"] = WOAR(encoding=3, url=author_url)  # Author URL
+    if mood:
+        audio["TMOO"] = TMOO(encoding=3, text=mood)  # Mood(what?)
+    audio.save()
+
+
+def add_album_art(mp3_file, album_art_file):
+    """_summary_
+
+    Args:
+        mp3_file (_type_): _description_
+        album_art_file (_type_): _description_
+    """
+
+    audio_file = eyed3.load(mp3_file)
+
+    if audio_file.tag == None:
+        audio_file.initTag()
+
+    audio_file.tag.images.set(ImageFrame.FRONT_COVER, open(album_art_file, "rb").read(), "image/jpeg")
+
+    audio_file.tag.save(version=eyed3.id3.ID3_V2_3)  # need to provide ID3 version or image does not show
+
+    # audio = MP3(mp3_file, ID3=ID3)
+    # if audio.tags is None:
+    #     audio.add_tags()
+
+    # # Open album art image
+    # with open(album_art_file, "rb") as img:
+    #     audio.tags.add(
+    #         APIC(
+    #             encoding=3,  # 3 is for utf-8
+    #             mime="image/jpeg",  # or image/png
+    #             type=3,  # 3 is for the album front cover
+    #             desc="Cover",
+    #             data=img.read(),
+    #         )
+    #     )
+
+    # audio.save()
 
 
 def main():
     # the youtube url is passed first from the bash script
     youtube_url = sys.argv[1]
     download_dir = sys.argv[2]
-    # TODO: take out later for debugging reasons
+    # # TODO: take out later for debugging reasons
     # youtube_url = "https://youtu.be/DXk8S3OlBrE?si=j2NnLy0guSUm8te7"
     # download_dir = "mp3s/"  # this will really be the folder passed in from script
 
