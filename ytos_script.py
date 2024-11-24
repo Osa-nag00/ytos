@@ -6,6 +6,7 @@ import shutil
 import datetime
 from typing import Optional
 
+from PIL import Image
 from pydub import AudioSegment
 
 import eyed3
@@ -104,6 +105,9 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
         downloaded_file_path, title=title, album_artist=artist, author_url=youtube_url, contributing_artists=artist
     )
 
+    # change thumbnail aspect ratio before this point
+    edit_thumbnail_aspect_ratio_to_1to1(thumbnail_path)
+
     if has_image:
         add_album_art(downloaded_file_path, album_art_file=thumbnail_path)
 
@@ -112,6 +116,25 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
 
     # remove the temp dir
     clean_up()
+
+
+# TODO: this is not gonna work like i want it too
+# !!! will need to be more robust (if this is even worth working on)
+def edit_thumbnail_aspect_ratio_to_1to1(filepath: str) -> None:
+    """This helper function will take the downloaded youtube thumbnail and
+        then change its aspect ration to 1:1 for better viewing on Spotify
+
+    Args:
+        filepath (str): path to where thumbnail was downloaded to
+    """
+
+    size = (250, 250)
+
+    image: Image = Image.open(filepath)
+
+    image.thumbnail(size)
+    image.save("test", "JPEG")
+    pass
 
 
 def convert_audio_to_mp3(filepath: str) -> None:
@@ -216,11 +239,11 @@ def add_album_art(mp3_file, album_art_file):
 
 def main():
     # the youtube url is passed first from the bash script
-    youtube_url = sys.argv[1]
-    download_dir = sys.argv[2]
+    # youtube_url = sys.argv[1]
+    # download_dir = sys.argv[2]
     # # TODO: take out later for debugging reasons
-    # youtube_url = "https://youtu.be/DXk8S3OlBrE?si=j2NnLy0guSUm8te7"
-    # download_dir = "mp3s/"  # this will really be the folder passed in from script
+    youtube_url = "https://youtu.be/mYfWW-5Ufmc?si=Dn-jKLjUuocIAoay"
+    download_dir = "mp3s/"  # this will really be the folder passed in from script
 
     # do a quick validation check on the args passed in
     if not is_valid_url(youtube_url):
