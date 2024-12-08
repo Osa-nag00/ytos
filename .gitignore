@@ -7,3 +7,6 @@ mp3s/
 
 #ignore vscode workspace settings
 .vscode/
+
+# ignore pycache
+__pycache__/
