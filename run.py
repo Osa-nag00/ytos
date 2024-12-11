@@ -1,8 +1,11 @@
 import sys
+from pathlib import Path
 from rich.console import Console
 import click
-from ytos import printer
-from ytos import validator as v
+
+import src.validator as v
+import src.downloadUtil as du
+import src.printer as printer
 
 
 @click.command()
@@ -35,10 +38,9 @@ def ytos(link: str, save_dir: str) -> None:
         )
         sys.exit(-1)
     # TODO: handle the rest of this later, need to figure out how functionality should be split
-    # else:
-    # download_mp3_to_dir(youtube_url, download_dir)
-
-    pass
+    else:
+        du.download_mp3_to_dir(link, save_dir)
+        sys.exit(0)
 
 
 if __name__ == "__main__":
