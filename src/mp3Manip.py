@@ -3,7 +3,15 @@ import eyed3
 from eyed3.id3.frames import ImageFrame
 
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TALB, TPE1, TPE2, TCON, TPUB, TENC, TIT3, APIC, WOAR, TMOO
+from mutagen.id3 import ID3, TIT2, TALB, TPE1, TPE2, TCON, TPUB, TENC, TIT3, WOAR, TMOO
+import subprocess
+
+
+# TODO: worry about this later
+""" 
+    FFMPEG is prb faster, but its not change the header of the file
+    and mutagen breaks when the header is not for mp3 even if the file it self is converted
+"""
 
 
 def convert_audio_to_mp3(filepath: str) -> None:
@@ -12,9 +20,8 @@ def convert_audio_to_mp3(filepath: str) -> None:
     Args:
         filepath (str): Path the mp3 that will be converted
     """
-    audio = AudioSegment.from_file(filepath, format="mp4")
-    audio.export(filepath, format="mp3")
-    pass
+    command = "ffmpeg -i {} -vn {}".format(filepath, ".newFile")
+    subprocess.call(command, shell=True)
 
 
 def edit_mp3_metadata(
