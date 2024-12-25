@@ -40,27 +40,27 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     # get all streams from the video
     streams: StreamQuery = video.streams
 
-    # extract only the mp3 from the video
-    audio_from_video: Stream = streams.get_audio_only()
-    downloaded_file_path = audio_from_video.download(output_path="temp/mp3", mp3=True, max_retries=10)
-
+    # This gets the audio stream but in an incorrect codec from the one we need
+    audio_stream_from_video: Stream = streams.get_audio_only()
+    mp4_audio_path = audio_stream_from_video.download(output_path="temp/mp4_audio", max_retries=10)
     """
     For some reason when downloading the video and then extracting audio only from youtube, the audio file actually 
     follows the m4a codec. This causes problems when trying the modify mp3 specific attributes that use the ID3 header.
     To fix that, convert the mystery file into an actual mp3 using some ffmpeg magic and then you're able to modify the
     mp3 attributes.
     """
-    mp3m.convert_audio_to_mp3(downloaded_file_path)
+    # TODO: change this to return mp3 file path?
+    mp3_audio_path = mp3m.convert_audio_to_mp3(mp4_audio_path)
 
     mp3m.edit_mp3_metadata(
-        downloaded_file_path, title=title, album_artist=artist, author_url=youtube_url, contributing_artists=artist
+        mp3_audio_path, title=title, album_artist=artist, author_url=youtube_url, contributing_artists=artist
     )
 
     if has_image:
-        mp3m.add_album_art(downloaded_file_path, album_art_file=TEMP_THUMBNAIL_PATH)
+        mp3m.add_album_art(mp3_audio_path, album_art_file=TEMP_THUMBNAIL_PATH)
 
     # after editing mp3, move it to the correct location
-    fm.move(downloaded_file_path, download_dir)
+    fm.move(mp3_audio_path, download_dir)
 
     # remove the temp dir
     fm.clean_up()
