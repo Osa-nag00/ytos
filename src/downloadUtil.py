@@ -60,7 +60,7 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
         mp3m.add_album_art(mp3_audio_path, album_art_file=TEMP_THUMBNAIL_PATH)
 
     # after editing mp3, move it to the correct location
-    fm.move(mp3_audio_path, download_dir)
+    fm.overwrite_move(mp3_audio_path, download_dir)
 
     # remove the temp dir
     fm.clean_up()

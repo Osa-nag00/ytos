@@ -18,11 +18,19 @@ def clean_up():
 
 
 # TODO: fix bug where if file already exist then don't try to move
-def move(src: str, dest: str) -> None:
-    """Moves file at src to dest
+def overwrite_move(src: str, dest: str) -> None:
+    """
+    Moves a file to the destination, overwriting the destination file if it already exists.
 
     Args:
-        src (str): Source file
-        dest (str): destination location
+        src (str): The source file path.
+        dest (str): The destination file path.
+
+    Returns:
+        None
     """
+    srcPathAsList: list[str] = src.split("/")
+    fileName: str = srcPathAsList[len(srcPathAsList) - 1]
+    if os.path.exists(dest + fileName):
+        os.remove(dest + fileName)  # Remove the existing file
     shutil.move(src, dest)

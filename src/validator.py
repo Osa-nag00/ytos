@@ -2,6 +2,22 @@ import os
 import validators
 
 
+import os
+
+
+def file_exists(file_path: str) -> bool:
+    """
+    Check if a file exists at the given file path.
+
+    Parameters:
+    file_path (str): The path to the file to check.
+
+    Returns:
+    bool: True if the file exists, False otherwise.
+    """
+    return os.path.exists(file_path)
+
+
 def is_download_dir_valid(dir: str) -> bool:
     """Checks if the download directory exist and is valid
         THIS WILL NOT CREATE A DIR FOR YOU!

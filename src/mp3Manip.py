@@ -29,7 +29,7 @@ def convert_audio_to_mp3(inFilePath: str) -> str:
     # split by '.' to get ['filename','ext'], add mp3 ext
     outfilePath: str = os.path.abspath("temp/mp3/" + (inputFileName.split(".")[0] + ".mp3"))
 
-    command = '''ffmpeg -i "{}" "{}"'''.format(inputFilePath, outfilePath)
+    command = '''ffmpeg -y -loglevel quiet -i "{}" "{}"'''.format(inputFilePath, outfilePath)
 
     subprocess.run(command, shell=True, executable="/bin/bash")
     return outfilePath
