@@ -4,24 +4,35 @@ from eyed3.id3.frames import ImageFrame
 
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, TIT2, TALB, TPE1, TPE2, TCON, TPUB, TENC, TIT3, WOAR, TMOO
-import subprocess
+import subprocess, os
 
 
-# TODO: worry about this later
 """ 
-    FFMPEG is prb faster, but its not change the header of the file
+    FFMPEG is prb faster, but its not changing the header of the file
     and mutagen breaks when the header is not for mp3 even if the file it self is converted
 """
 
 
-def convert_audio_to_mp3(filepath: str) -> None:
-    """Converts mp4 file to mp3, this operation will happen in place
+# TODO: come back and fix the hardcoded paths
+def convert_audio_to_mp3(inFilePath: str) -> str:
+    """Using ffmpeg, convert inFile to mp3 of the same name
 
     Args:
-        filepath (str): Path the mp3 that will be converted
+        inFilePath (str): File path of the file we are converting
     """
-    command = "ffmpeg -i {} -vn {}".format(filepath, ".newFile")
-    subprocess.call(command, shell=True)
+    splitInputFilePath: list[str] = inFilePath.split("/")  # create list of file path
+
+    inputFileName: str = splitInputFilePath[len(splitInputFilePath) - 1]  # file name should be at the end of path
+
+    inputFilePath: str = os.path.abspath("temp/mp4_audio/" + inputFileName)
+
+    # split by '.' to get ['filename','ext'], add mp3 ext
+    outfilePath: str = os.path.abspath("temp/mp3/" + (inputFileName.split(".")[0] + ".mp3"))
+
+    command = '''ffmpeg -i "{}" "{}"'''.format(inputFilePath, outfilePath)
+
+    subprocess.run(command, shell=True, executable="/bin/bash")
+    return outfilePath
 
 
 def edit_mp3_metadata(
