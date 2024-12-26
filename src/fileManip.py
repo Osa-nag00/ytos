@@ -17,7 +17,6 @@ def clean_up():
         shutil.rmtree("temp/")
 
 
-# TODO: fix bug where if file already exist then don't try to move
 def overwrite_move(src: str, dest: str) -> None:
     """
     Moves a file to the destination, overwriting the destination file if it already exists.
@@ -34,3 +33,14 @@ def overwrite_move(src: str, dest: str) -> None:
     if os.path.exists(dest + fileName):
         os.remove(dest + fileName)  # Remove the existing file
     shutil.move(src, dest)
+
+
+def readLinksFromFile(filePath: str) -> list[str]:
+    links: list[str] = []
+    
+    with open(filePath, "r") as file:
+        # Loop through each line in the file
+        for line in file:
+            link = line.strip() # Remove any leading/trailing whitespace (like newline characters)
+            links.append(link) # add links to list
+    return links

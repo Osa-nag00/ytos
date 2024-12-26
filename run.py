@@ -5,7 +5,7 @@ import click
 import src.validator as v
 import src.downloadUtil as du
 import src.printer as printer
-
+import src.fileManip as fm
 
 @click.command()
 @click.option(
@@ -35,22 +35,18 @@ def ytos(save_dir: str, filePath: str) -> None:
     console.print(entryMsg + "\n")
 
     if not v.is_download_dir_valid(save_dir):
-        errConsole.print(
-            f"Download directory: [bold red]{save_dir}[/bold red] is not a valid directory to download the mp3 to"
-        )
+        errConsole.print(f"Download directory: [bold red]{save_dir}[/bold red] is not a valid directory to download the mp3 to")
         sys.exit(-1)
     elif not v.file_exists(filePath):
         errConsole.print(f"List of youtube links : [bold red]{filePath}[/bold red] is not a valid file")
         sys.exit(1)
     else:
-        with open(filePath, "r") as file:
-            # Loop through each line in the file
-            for line in file:
-                # Remove any leading/trailing whitespace (like newline characters)
-                link = line.strip()
+        links: list[str] = fm.readLinksFromFile(filePath)
+        for link in links:
+            console.print(f"\nWorking on [bold green]{printer.linkString(link, link)}[/bold green]")
+            du.download_mp3_to_dir(link, save_dir)
+        console.print("Done")
 
-                # Perform any operation on the link (e.g., print it, or replace with your operation)
-                du.download_mp3_to_dir(link, save_dir)
         sys.exit(0)
 
 
