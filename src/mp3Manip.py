@@ -1,4 +1,3 @@
-from pydub import AudioSegment
 import eyed3
 from eyed3.id3.frames import ImageFrame
 
