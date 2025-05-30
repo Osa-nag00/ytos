@@ -37,10 +37,12 @@ def overwrite_move(src: str, dest: str) -> None:
 
 def readLinksFromFile(filePath: str) -> list[str]:
     links: list[str] = []
-    
+
     with open(filePath, "r") as file:
         # Loop through each line in the file
         for line in file:
-            link = line.strip() # Remove any leading/trailing whitespace (like newline characters)
-            links.append(link) # add links to list
+            link = (
+                line.strip()
+            )  # Remove any leading/trailing whitespace (like newline characters)
+            links.append(link)  # add links to list
     return links

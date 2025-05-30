@@ -1,10 +1,10 @@
+import os
+import subprocess
+
 import eyed3
 from eyed3.id3.frames import ImageFrame
-
+from mutagen.id3 import ID3, TALB, TCON, TENC, TIT2, TIT3, TMOO, TPE1, TPE2, TPUB, WOAR
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TALB, TPE1, TPE2, TCON, TPUB, TENC, TIT3, WOAR, TMOO
-import subprocess, os
-
 
 """ 
     FFMPEG is prb faster, but its not changing the header of the file
@@ -21,14 +21,20 @@ def convert_audio_to_mp3(inFilePath: str) -> str:
     """
     splitInputFilePath: list[str] = inFilePath.split("/")  # create list of file path
 
-    inputFileName: str = splitInputFilePath[len(splitInputFilePath) - 1]  # file name should be at the end of path
+    inputFileName: str = splitInputFilePath[
+        len(splitInputFilePath) - 1
+    ]  # file name should be at the end of path
 
     inputFilePath: str = os.path.abspath("temp/mp4_audio/" + inputFileName)
 
     # split by '.' to get ['filename','ext'], add mp3 ext
-    outfilePath: str = os.path.abspath("temp/mp3/" + (inputFileName.split(".")[0] + ".mp3"))
+    outfilePath: str = os.path.abspath(
+        "temp/mp3/" + (inputFileName.split(".")[0] + ".mp3")
+    )
 
-    command = '''ffmpeg -y -loglevel quiet -i "{}" "{}"'''.format(inputFilePath, outfilePath)
+    command = '''ffmpeg -y -loglevel quiet -i "{}" "{}"'''.format(
+        inputFilePath, outfilePath
+    )
 
     subprocess.run(command, shell=True, executable="/bin/bash")
     return outfilePath
@@ -71,7 +77,9 @@ def edit_mp3_metadata(
     if subtitle:
         audio["TIT3"] = TIT3(encoding=3, text=subtitle)  # Subtitle
     if contributing_artists:
-        audio["TPE1"] = TPE1(encoding=3, text=contributing_artists)  # Contributing artists
+        audio["TPE1"] = TPE1(
+            encoding=3, text=contributing_artists
+        )  # Contributing artists
     if album_artist:
         audio["TPE2"] = TPE2(encoding=3, text=album_artist)  # Album artist
     if album:
@@ -99,12 +107,22 @@ def add_album_art(mp3_file, album_art_file):
 
     audio_file = eyed3.load(mp3_file)
 
+    if audio_file == None:
+        return
+
     if audio_file.tag == None:
         audio_file.initTag()
 
-    audio_file.tag.images.set(ImageFrame.FRONT_COVER, open(album_art_file, "rb").read(), "image/jpeg")
+    if audio_file.tag == None:
+        return
 
-    audio_file.tag.save(version=eyed3.id3.ID3_V2_3)  # need to provide ID3 version or image does not show
+    audio_file.tag.images.set(
+        ImageFrame.FRONT_COVER, open(album_art_file, "rb").read(), "image/jpeg"
+    )
+
+    audio_file.tag.save(
+        version=eyed3.id3.ID3_V2_3
+    )  # need to provide ID3 version or image does not show
 
     # audio = MP3(mp3_file, ID3=ID3)
     # if audio.tags is None:

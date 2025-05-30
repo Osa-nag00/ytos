@@ -1,13 +1,12 @@
-from pytubefix import YouTube
+from urllib import request as urllib_request
+
+from pytubefix import Stream, StreamQuery, YouTube
 from pytubefix.cli import on_progress
-from pytubefix import StreamQuery
-from pytubefix import Stream
-import urllib
 
 # Local imports
-from . import validator as v
 from . import fileManip as fm
 from . import mp3Manip as mp3m
+from . import validator as v
 
 TEMP_THUMBNAIL_PATH = "temp/thumbnail/image.jpg"
 
@@ -34,15 +33,22 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     # will later attach to mp3 for track image, if one is not already applied
     if v.is_valid_url(thumbnail_url):
         # this return a tuple but I don't really need the information from it
-        urllib.request.urlretrieve(thumbnail_url, TEMP_THUMBNAIL_PATH)
+        urllib_request.urlretrieve(thumbnail_url, TEMP_THUMBNAIL_PATH)
         has_image = True
 
     # get all streams from the video
     streams: StreamQuery = video.streams
 
     # This gets the audio stream but in an incorrect codec from the one we need
-    audio_stream_from_video: Stream = streams.get_audio_only()
-    mp4_audio_path = audio_stream_from_video.download(output_path="temp/mp4_audio", max_retries=10)
+    audio_stream_from_video: Stream | None = streams.get_audio_only()
+
+    if audio_stream_from_video == None:
+        return
+
+    mp4_audio_path = audio_stream_from_video.download(
+        output_path="temp/mp4_audio", max_retries=10
+    )
+
     """
     For some reason when downloading the video and then extracting audio only from youtube, the audio file actually 
     follows the m4a codec. This causes problems when trying the modify mp3 specific attributes that use the ID3 header.
@@ -50,10 +56,18 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     mp3 attributes.
     """
     # TODO: change this to return mp3 file path?
+
+    if mp4_audio_path == None:
+        return
+
     mp3_audio_path = mp3m.convert_audio_to_mp3(mp4_audio_path)
 
     mp3m.edit_mp3_metadata(
-        mp3_audio_path, title=title, album_artist=artist, author_url=youtube_url, contributing_artists=artist
+        mp3_audio_path,
+        title=title,
+        album_artist=artist,
+        author_url=youtube_url,
+        contributing_artists=artist,
     )
 
     if has_image:

@@ -1,8 +1,6 @@
 import os
+
 import validators
-
-
-import os
 
 
 def file_exists(file_path: str) -> bool:
@@ -39,4 +37,8 @@ def is_valid_url(url: str) -> bool:
     Returns:
         bool: returns true if URL is not malformed, false otherwise
     """
-    return validators.url(url)
+    answer = validators.url(url)
+
+    if type(answer) is bool:
+        return answer
+    return False
