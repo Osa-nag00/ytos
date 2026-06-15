@@ -1,0 +1,14 @@
+[project]
+name = "ytos"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.4.1",
+    "eyed3>=0.9.9",
+    "mutagen>=1.47.0",
+    "pytubefix>=10.9.0",
+    "rich>=15.0.0",
+    "validators>=0.35.0",
+]
