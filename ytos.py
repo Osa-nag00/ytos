@@ -27,8 +27,8 @@ from rich.console import Console
 )
 def ytos(save_dir: str, filePath: str) -> None:
     """
-    Youtube to spotify script will take a given a text file of youtube links to be downloaded to mp3
-    of the specified video to a Spotify local folder
+    Youtube to Spotify script will take a given a text file of Youtube links separated by newline (\n) to be downloaded to MP3
+    of the specified video to a Spotify local folder.
     """
 
     console = Console()
