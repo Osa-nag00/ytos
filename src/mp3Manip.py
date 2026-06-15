@@ -13,11 +13,16 @@ from mutagen.mp3 import MP3
 
 
 # TODO: come back and fix the hardcoded paths
-def convert_audio_to_mp3(inFilePath: str) -> str:
-    """Using ffmpeg, convert inFile to mp3 of the same name
+def convert_audio_to_mp3(inFilePath: str) -> str | None:
+    """
+
+    Using ffmpeg, convert inFile to mp3 of the same name
 
     Args:
         inFilePath (str): File path of the file we are converting
+
+    Returns:
+        String of path to mp3, None if ffmpeg is not installed or fails
     """
     splitInputFilePath: list[str] = inFilePath.split("/")  # create list of file path
 
@@ -32,11 +37,21 @@ def convert_audio_to_mp3(inFilePath: str) -> str:
         "temp/mp3/" + (inputFileName.split(".")[0] + ".mp3")
     )
 
+    # Capture the return code of running "which" for ffmpeg, only when return code is zero is when command is on path a executable
+    # TODO: figure out why this is printing out the output of which?
+    ffmpeg_check_cmd: str = '''which ffmpeg''' 
+    ffmpeg_check_cmd_output: subprocess.CompletedProcess[bytes] = subprocess.run(ffmpeg_check_cmd, shell=True, executable="/bin/sh")
+    
+    if ffmpeg_check_cmd_output.returncode is not 0:
+        print("ffmpeg is not on path")
+        return None
+    
+
     command = '''ffmpeg -y -loglevel quiet -i "{}" "{}"'''.format(
         inputFilePath, outfilePath
     )
 
-    subprocess.run(command, shell=True, executable="/bin/bash")
+    subprocess.run(command, shell=True, executable="/bin/sh")
     return outfilePath
 
 

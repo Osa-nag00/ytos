@@ -24,8 +24,9 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     video: YouTube = YouTube(youtube_url, on_progress_callback=on_progress)
     artist: str = video.author
     title: str = video.title
-    # ? See why this is not used
+    #TODO:  See why this is not used
     # publish_date: datetime = video.publish_date
+    
     thumbnail_url: str = video.thumbnail_url
     has_image: bool = False
 
@@ -57,10 +58,13 @@ def download_mp3_to_dir(youtube_url: str, download_dir: str):
     """
     # TODO: change this to return mp3 file path?
 
-    if mp4_audio_path == None:
+    if mp4_audio_path is None or mp4_audio_path is "":
+        fm.clean_up()
         return
 
     mp3_audio_path = mp3m.convert_audio_to_mp3(mp4_audio_path)
+    if not mp3_audio_path:
+        return
 
     mp3m.edit_mp3_metadata(
         mp3_audio_path,
