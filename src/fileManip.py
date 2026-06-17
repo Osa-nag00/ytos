@@ -30,8 +30,9 @@ def overwrite_move(src: str, dest: str) -> None:
     """
     srcPathAsList: list[str] = src.split("/")
     fileName: str = srcPathAsList[len(srcPathAsList) - 1]
-    if os.path.exists(dest + fileName):
-        os.remove(dest + fileName)  # Remove the existing file
+    filepath_to_write: str = dest + "/" + fileName
+    if os.path.exists(filepath_to_write):
+        os.remove(filepath_to_write)  # Remove the existing file
     shutil.move(src, dest)
 
 
